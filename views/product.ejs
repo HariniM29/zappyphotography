@@ -47,6 +47,8 @@
                   <h5 class="card-title"><%= product.name %></h5>
                   <p class="card-text">₹<%= product.price %></p>
                   <button class="btn btn-success" onclick="addToCart('<%= product._id %>', '<%= product.name %>',' <%= product.price %>')">Add to Cart</button>
+                 
+
                 </div>
               </div>
             </div>
@@ -69,6 +71,7 @@
             </tr>
           </thead>
           <tbody id="cart-items">
+           
             <!-- Cart items will be displayed here -->
           </tbody>
           <tfoot>
@@ -87,6 +90,7 @@
     </div>
   </div>
   <script>
+
     function generatePDF() {
       const doc = new jsPDF();
   
@@ -177,33 +181,70 @@
       }
     }
 
-    function updateCartUI() {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const cartItems = document.getElementById('cart-items');
-      const totalPriceElement = document.getElementById('total-price');
 
-      cartItems.innerHTML = '';
-      let total = 0;
 
-      cart.forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${item.productName}</td>
-          <td>₹${item.productPrice}</td>
-          <td>${item.quantity}</td>
-          <td>
-            <button class="btn btn-danger" onclick="removeCartItem('${item.productId}')">Remove</button>
-          </td>
-        `;
-        cartItems.appendChild(row);
 
-        total += item.productPrice * item.quantity;
-      });
 
-      totalPriceElement.textContent = `₹${total}`;
-    }
-
-    updateCartUI();
+   
   </script>
+  <script>
+ function updateCartUI() {
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  const cartItems = document.getElementById('cart-items');
+  const totalPriceElement = document.getElementById('total-price');
+
+  cartItems.innerHTML = '';
+  let total = 0;
+
+  cart.forEach(item => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${item.productName}</td>
+      <td>
+        ₹<span id="price-${item.productId}">${item.productPrice}</span>
+      
+      </td>
+      <td>${item.quantity}</td>
+      <td>
+        <button class="btn btn-danger" onclick="removeCartItem('${item.productId}')">Remove</button>
+      </td>
+      <td>
+        <button class="btn btn-primary" onclick="editCartItem('${item.productId}', '${item.productPrice}')">Edit</button>
+        </td>
+    `;
+    cartItems.appendChild(row);
+
+    total += item.productPrice * item.quantity;
+  });
+
+  totalPriceElement.textContent = `₹${total}`;
+}
+
+function editCartItem(productId, currentPrice) {
+  const newPrice = prompt('Enter the new price:', currentPrice);
+
+  // If the user clicks "Cancel" or provides an invalid value, do nothing
+  if (newPrice === null || isNaN(parseFloat(newPrice)) || newPrice <= 0) {
+    return;
+  }
+
+  // Update the local storage with the new price
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  const updatedCart = cart.map(item => {
+    if (item.productId === productId) {
+      item.productPrice = parseFloat(newPrice);
+    }
+    return item;
+  });
+
+  localStorage.setItem('cart', JSON.stringify(updatedCart));
+
+  // Update the UI
+  updateCartUI();
+}
+
+updateCartUI();
+</script>
+
 </body>
 </html>

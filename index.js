@@ -14,7 +14,9 @@ app.use(session({ secret: secretKey, resave: true, saveUninitialized: true }));
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(express.json());
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+//const upload = multer({ storage: storage });
+const upload = multer();
+
 
 mongoose.connect('mongodb+srv://sixSlay:oZ8NGjZswFfgw2wG@serverlessinstance2.yx1strl.mongodb.net/zappy', {
   useNewUrlParser: true,
@@ -125,17 +127,24 @@ app.get('/imageupload', async(req, res) => {
   const baby = await babyImage.countDocuments({});
   const marriage = await marriageImage.countDocuments({});
 const cardTotal=baby+marriage
+
   res.render('imageadd',{cardTotal});
 });
+//Const upload = multer();
 
-app.post('/imageupload', upload.array('images', 15), async (req, res) => {
+app.post('/imageupload', upload.array('images'), async (req, res) => {
+//app.post('/imageupload', upload.array('images', 15), async (req, res) => {
   try {
     const images = req.files;
     const name=req.body.name;
     const days=req.body.date;
    const event=req.body.event;
-   
-console.log(event)
+   console.log(images.length);
+   if (req.files.length > 15) {
+    res.redirect('/404');
+    return;
+     }
+   console.log(event)
   if (event=="Wedding"){
     const imageDocument = new marriageImage({
       event:event,
@@ -186,7 +195,7 @@ console.log(event)
     res.redirect('/successimage');
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.redirect('/404');
   }
 });
 
@@ -206,7 +215,7 @@ app.get('/marriage',async (req, res) => {
         res.render('moments.ejs', { imageDocument });
       } catch (error) {
         console.error(error);
-        res.status(500).send('Server error');
+        res.redirect('/404');
       }
 });
 app.get('/baby', async (req, res) => {
@@ -218,7 +227,7 @@ app.get('/baby', async (req, res) => {
     res.render('moments.ejs', { imageDocument });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+     res.redirect('/404');
   }
 });
 
@@ -235,7 +244,7 @@ app.get('/view/:fileId', async (req, res) => {
       const images=item.images
       console.log(images.length)
       if (!item) {
-          return res.status(404).send('File not found');
+          return  res.redirect('/404');
       }
    
       await res.render('inside.ejs', {item , images});
@@ -243,7 +252,7 @@ app.get('/view/:fileId', async (req, res) => {
       
   } catch (error) {
       console.error(error);
-      res.status(500).send('An error occurred.');
+      res.redirect('/404');
   }
 });
 
@@ -306,7 +315,7 @@ app.post('/login', async (req, res) => {
     
   } catch (error) {
     console.error(error);
-    res.status(500).send('An error occurred.');
+    res.redirect('/404');
   }
 }
   )
@@ -365,7 +374,7 @@ app.post('/registeredlogin', async (req, res) => {
     
   } catch (error) {
     console.error(error);
-    res.status(500).send('An error occurred.');
+    res.redirect('/404');
   }
 }
   )
@@ -409,7 +418,7 @@ app.post('/registeredlogin', async (req, res) => {
     }
     catch (error) {
       console.error(error);
-      res.status(500).send('An error occurred.');
+      res.redirect('/404');
   }
   });
 
@@ -437,13 +446,17 @@ app.get('/successproduct', (req, res) => {
 app.get('/inside', (req, res) => {
   res.render('inside');
 });
-
+/*
 app.get('/404', (req, res) => {
+  res.render('404');
+});*/
+app.use('/404',(req, res) => {
   res.render('404');
 });
 app.get('/mailsuccess', (req, res) => {
   res.render('mailsuccess');
 });
+
 
 
 
@@ -486,7 +499,7 @@ app.post('/contactus',(req,res)=>{
      transporter.sendMail(mailOptions, (error, info)=>{
         if(error){
             console.log(error);
-            res.send('error');
+            res.redirect('/404');
 
         }
         else{
@@ -511,7 +524,7 @@ app.get('/marriagedelete', isAuthenticated,async (req, res) => {
       res.render('imagedelete', { imageDocument });
     } catch (error) {
       console.error(error);
-      res.status(500).send('Server error');
+       res.redirect('/404');
     }
 });
 app.get('/babydelete',isAuthenticated, async (req, res) => {
@@ -523,7 +536,7 @@ try {
   res.render('imagedelete', { imageDocument });
 } catch (error) {
   console.error(error);
-  res.status(500).send('Server error');
+   res.redirect('/404');
 }
 });
 
@@ -614,7 +627,7 @@ app.get('/sell', async (req, res) => {
     const products = await Product.find();
     res.render('product', { products, cart });
   } catch (err) {
-    res.status(500).send('Error fetching products');
+    res.redirect('/404');
   }
 });
 
@@ -667,7 +680,7 @@ app.get('/products', async (req, res) => {
     res.render('product', { products });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error fetching products');
+    res.redirect('/404');
   }
 });
 
@@ -682,7 +695,7 @@ app.get('/deleteproduct',isAuthenticated, async (req, res) => {
     res.render('productdelete', { products,totalCount });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+     res.redirect('/404');
   }
   });
 
@@ -706,7 +719,7 @@ app.post('/deleteproduct/:fileId',isAuthenticated, async (req, res) => {
     
   } catch (error) {
     console.error(error);
-    res.status(500).send('An error occurred.');
+    res.redirect('/404');
   }
 });
 
